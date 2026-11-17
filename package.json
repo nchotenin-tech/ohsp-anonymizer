@@ -1,0 +1,12 @@
+{
+  "name": "ohsp-anonymizer",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Client-side web app to anonymize HDC Data Exchange and other Excel/CSV files before sending to AI",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "xlsx": "0.18.5"
+  }
+}

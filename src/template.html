@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Anonymizer for AI — HDC Data Exchange</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--mute:#5d6678;--line:#e1e5ec;--pri:#0f6e6e;--pri2:#e5f3f2;--warn:#b45309;--warnbg:#fff7e6;--bad:#b42318;--badbg:#fdecea;--ok:#147a3d;--okbg:#e8f6ee}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
+header{background:var(--pri);color:#fff;padding:18px 28px}
+header h1{margin:0;font-size:21px;font-weight:600}
+header p{margin:4px 0 0;opacity:.85;font-size:13.5px}
+main{max-width:1280px;margin:0 auto;padding:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 20px;margin-bottom:16px}
+.card h2{margin:0 0 12px;font-size:17px;font-weight:600;display:flex;align-items:center;gap:8px}
+.step{display:inline-flex;width:24px;height:24px;border-radius:50%;background:var(--pri);color:#fff;font-size:13px;align-items:center;justify-content:center}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.drop{border:2px dashed #b8c2d0;border-radius:10px;padding:26px;text-align:center;color:var(--mute);cursor:pointer;transition:.15s}
+.drop.over,.drop:hover{border-color:var(--pri);background:var(--pri2);color:var(--pri)}
+button,.btn{font:inherit;font-size:14px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 14px;border-radius:7px;cursor:pointer}
+button:hover{border-color:var(--pri)}
+button.pri{background:var(--pri);border-color:var(--pri);color:#fff}
+button.pri:hover{filter:brightness(1.1)}
+button:disabled{opacity:.45;cursor:not-allowed}
+select,input[type=text],input[type=number]{font:inherit;font-size:14px;border:1px solid var(--line);border-radius:6px;padding:5px 8px;background:#fff}
+input[type=number]{width:72px}
+label.small{font-size:13px;color:var(--mute)}
+.tbl-wrap{overflow:auto;max-height:560px;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{padding:6px 9px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap;vertical-align:middle}
+thead th{position:sticky;top:0;background:#eef1f5;z-index:1;font-weight:600}
+tr.r-drop td{background:#fafafa;color:#98a1b0}
+tr.r-drop td.fname{text-decoration:line-through}
+tr.r-chg td.fname{color:var(--pri);font-weight:600}
+.samp{color:var(--mute);max-width:260px;overflow:hidden;text-overflow:ellipsis;font-size:12.5px}
+.tag{display:inline-block;font-size:11.5px;padding:1px 7px;border-radius:10px;margin-left:4px}
+.t-id{background:var(--badbg);color:var(--bad)}
+.t-qi{background:var(--warnbg);color:var(--warn)}
+.t-auto{background:var(--pri2);color:var(--pri)}
+.note{font-size:13px;color:var(--mute)}
+.alert{padding:10px 14px;border-radius:8px;font-size:13.5px;margin-top:10px}
+.a-warn{background:var(--warnbg);color:#7a3e00;border:1px solid #f5d9a8}
+.a-bad{background:var(--badbg);color:var(--bad);border:1px solid #f4c4bf}
+.a-ok{background:var(--okbg);color:var(--ok);border:1px solid #bfe3cc}
+.stats{display:flex;gap:12px;flex-wrap:wrap;margin-top:6px}
+.stat{background:#f3f5f8;border-radius:8px;padding:8px 14px;min-width:130px}
+.stat b{display:block;font-size:20px}
+.stat span{font-size:12.5px;color:var(--mute)}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button.on{background:var(--pri2);border-color:var(--pri);color:var(--pri)}
+code{background:#eef1f5;padding:1px 5px;border-radius:4px;font-size:12.5px}
+.hidden{display:none}
+.legend td{white-space:normal}
+details summary{cursor:pointer;color:var(--pri);font-size:14px}
+.saltbox{font-family:Consolas,monospace;width:300px}
+td.param input,td.param select{max-width:150px}
+</style>
+</head>
+<body>
+<header>
+  <h1>🔒 Data Anonymizer for AI</h1>
+  <p>แปลงข้อมูลรายบุคคลให้เป็นข้อมูลนิรนาม (anonymous / pseudonymous) ก่อนส่งให้ AI วิเคราะห์ — ค่าเริ่มต้นตามไฟล์ Data Exchange จาก HDC · ประมวลผลในเบราว์เซอร์ทั้งหมด ไม่มีการส่งข้อมูลออกนอกเครื่อง</p>
+</header>
+<main>
+
+<section class="card">
+  <h2><span class="step">1</span> เลือกไฟล์ข้อมูล (Excel .xlsx/.xls หรือ CSV)</h2>
+  <div id="drop" class="drop">ลากไฟล์มาวางที่นี่ หรือ <u>คลิกเพื่อเลือกไฟล์</u><br><span class="note">รองรับ .xlsx .xls .csv .txt — CSV อ่านได้ทั้ง UTF-8 และ TIS-620 (Windows-874)</span></div>
+  <input type="file" id="file" accept=".xlsx,.xls,.csv,.txt" class="hidden">
+  <div id="fileinfo" class="row hidden" style="margin-top:12px">
+    <span id="fname"></span>
+    <label class="small">Sheet: <select id="sheet"></select></label>
+    <label class="small">แถวหัวตาราง: <input type="number" id="hdrRow" value="1" min="1"></label>
+    <label class="small" id="encWrap">Encoding CSV: <select id="enc"><option value="auto">อัตโนมัติ</option><option value="utf-8">UTF-8</option><option value="windows-874">TIS-620 / Windows-874</option></select></label>
+    <span id="rowinfo" class="note"></span>
+  </div>
+</section>
+
+<section class="card hidden" id="cfgCard">
+  <h2><span class="step">2</span> กำหนดวิธีทำนิรนามรายฟิลด์</h2>
+  <div class="row" style="margin-bottom:10px">
+    <label class="small">ชุดกฎเริ่มต้น:
+      <select id="preset">
+        <option value="hdc">HDC Data Exchange (แนะนำ)</option>
+        <option value="strict">เข้มงวด (ลบ/แปลงมากขึ้น)</option>
+        <option value="keep">เก็บทั้งหมด (กำหนดเอง)</option>
+      </select></label>
+    <button id="btnApplyPreset">ใช้ชุดกฎนี้</button>
+    <span style="flex:1"></span>
+    <button id="btnSaveCfg">💾 บันทึกการตั้งค่า (.json)</button>
+    <button id="btnLoadCfg">📂 โหลดการตั้งค่า</button>
+    <input type="file" id="cfgFile" accept=".json" class="hidden">
+  </div>
+  <div class="row" style="margin-bottom:12px">
+    <label class="small">คอลัมน์ระบุตัวบุคคล (ใช้ผูกรหัสแทน / เลื่อนวันที่ให้คงที่ต่อคน):
+      <select id="personKey"></select></label>
+    <label class="small">Secret salt:
+      <input type="text" id="salt" class="saltbox"></label>
+    <button id="btnNewSalt" title="สุ่มใหม่">🎲</button>
+  </div>
+  <div class="tbl-wrap">
+    <table id="cfgTbl">
+      <thead><tr><th>#</th><th>ฟิลด์</th><th>ตัวอย่างค่า</th><th>วิธีจัดการ</th><th>พารามิเตอร์</th><th title="Quasi-identifier ใช้ตรวจ k-anonymity">QI</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+  <details style="margin-top:12px">
+    <summary>คำอธิบายวิธีจัดการแต่ละแบบ</summary>
+    <table class="legend" style="margin-top:8px">
+      <tr><td><b>เก็บไว้</b></td><td>คงค่าเดิม</td></tr>
+      <tr><td><b>ลบทิ้ง</b></td><td>ตัดคอลัมน์ออกจากไฟล์ผลลัพธ์ (ใช้กับ ชื่อ นามสกุล เบอร์โทร ที่อยู่)</td></tr>
+      <tr><td><b>รหัสแทน (hash)</b></td><td>แปลงเป็นรหัสคงที่ด้วย SHA-256 + salt เช่น <code>P-7c3a91e0b2</code> — ค่าเดิมเดียวกันได้รหัสเดียวกัน จึงยังเชื่อมข้อมูลข้ามไฟล์ได้ถ้าใช้ salt เดียวกัน · เลือก <b>+ คอลัมน์</b> เพื่อรวมค่าอื่นก่อนแปลง เช่น <code>pid</code> + <code>hoscode</code> (pid ไม่ซ้ำเฉพาะภายในหน่วยบริการ)</td></tr>
+      <tr><td><b>รหัสเรียงลำดับ</b></td><td>แปลงเป็นเลขลำดับ เช่น <code>ID00001</code> (ใช้ข้ามไฟล์ไม่ได้ เว้นแต่ใช้ไฟล์ key)</td></tr>
+      <tr><td><b>ปกปิดบางส่วน</b></td><td>เหลือ N ตัวอักษรแรก ที่เหลือเป็น *</td></tr>
+      <tr><td><b>ตัดเหลือ N หลัก</b></td><td>ลดความละเอียดรหัส เช่น รหัสหมู่บ้าน 8 หลัก → ตำบล 6 หลัก / อำเภอ 4 หลัก</td></tr>
+      <tr><td><b>วันที่ → ปี / ปี-เดือน</b></td><td>ลดความละเอียดวันที่ (เช่น วันเกิด)</td></tr>
+      <tr><td><b>วันที่ → อายุ (ปี)</b></td><td>คำนวณอายุ ณ วันที่อ้างอิง (คอลัมน์อื่น เช่น date_serv หรือวันนี้)</td></tr>
+      <tr><td><b>เลื่อนวันที่</b></td><td>เลื่อนแบบสุ่ม ±N วัน โดยคนเดียวกันเลื่อนเท่ากันทุกแถว (ช่วงห่างระหว่างวันยังถูกต้อง)</td></tr>
+      <tr><td><b>ช่วงอายุ/ช่วงตัวเลข</b></td><td>จัดกลุ่มตัวเลข เช่น 3 → "0-4" (ช่วงกว้าง N)</td></tr>
+      <tr><td><b>แทนด้วยค่าคงที่</b></td><td>แทนทุกค่าด้วยข้อความที่กำหนด</td></tr>
+      <tr><td><b>ล้างข้อความอิสระ</b></td><td>คงข้อความไว้ แต่ลบเลขบัตร 13 หลัก เบอร์โทร อีเมล ที่พบในข้อความ</td></tr>
+    </table>
+  </details>
+</section>
+
+<section class="card hidden" id="runCard">
+  <h2><span class="step">3</span> ตรวจผลและส่งออก</h2>
+  <div class="row">
+    <button class="pri" id="btnRun">▶ ประมวลผล</button>
+    <span id="runinfo" class="note"></span>
+  </div>
+  <div id="risk"></div>
+  <div id="outArea" class="hidden" style="margin-top:14px">
+    <div class="tabs"><button id="tabAfter" class="on">หลังทำนิรนาม</button><button id="tabBefore">ข้อมูลเดิม</button><span class="note" style="align-self:center">แสดง 30 แถวแรก</span></div>
+    <div class="tbl-wrap" style="max-height:420px"><table id="prevTbl"></table></div>
+    <div class="row" style="margin-top:14px">
+      <button class="pri" id="btnXlsx">⬇ ดาวน์โหลด .xlsx</button>
+      <button class="pri" id="btnCsv">⬇ ดาวน์โหลด .csv</button>
+      <button id="btnKey">🔑 ดาวน์โหลดไฟล์ key (รหัสเดิม ↔ รหัสแทน)</button>
+      <label class="small"><input type="checkbox" id="incLog" checked> แนบ sheet บันทึกวิธีการ (ไม่มีข้อมูลส่วนบุคคล)</label>
+    </div>
+    <div class="alert a-warn">⚠ ไฟล์ key และค่า salt ใช้ย้อนกลับหาตัวบุคคลได้ — เก็บไว้ในหน่วยงานเท่านั้น ห้ามส่งพร้อมไฟล์ข้อมูลให้ AI หรือบุคคลภายนอก</div>
+  </div>
+</section>
+
+<p class="note" style="text-align:center">ทำงานแบบออฟไลน์ได้ · ไม่มีการอัปโหลดข้อมูล · ควรทบทวนผลก่อนนำไปใช้ทุกครั้งตามแนวทาง PDPA</p>
+</main>
+
+<script>/*__XLSX__*/</script>
+<script>
+"use strict";
+/* ---------- SHA-256 (sync, pure JS) ---------- */
+function sha256(ascii){
+  const enc=new TextEncoder().encode(ascii);
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const l=enc.length, nb=((l+9+63)>>6)<<6, m=new Uint8Array(nb);
+  m.set(enc); m[l]=0x80; const bits=l*8;
+  m[nb-4]=bits>>>24; m[nb-3]=bits>>>16&255; m[nb-2]=bits>>>8&255; m[nb-1]=bits&255;
+  m[nb-5]=Math.floor(bits/4294967296)&255;
+  const w=new Uint32Array(64);
+  for(let i=0;i<nb;i+=64){
+    for(let t=0;t<16;t++) w[t]=(m[i+t*4]<<24)|(m[i+t*4+1]<<16)|(m[i+t*4+2]<<8)|m[i+t*4+3];
+    for(let t=16;t<64;t++){const a=w[t-15],b=w[t-2];
+      const s0=((a>>>7)|(a<<25))^((a>>>18)|(a<<14))^(a>>>3);
+      const s1=((b>>>17)|(b<<15))^((b>>>19)|(b<<13))^(b>>>10);
+      w[t]=(w[t-16]+s0+w[t-7]+s1)|0;}
+    let [a,b,c,d,e,f,g,h]=H;
+    for(let t=0;t<64;t++){
+      const S1=((e>>>6)|(e<<26))^((e>>>11)|(e<<21))^((e>>>25)|(e<<7));
+      const t1=(h+S1+((e&f)^(~e&g))+K[t]+w[t])|0;
+      const S0=((a>>>2)|(a<<30))^((a>>>13)|(a<<19))^((a>>>22)|(a<<10));
+      const t2=(S0+((a&b)^(a&c)^(b&c)))|0;
+      h=g;g=f;f=e;e=(d+t1)|0;d=c;c=b;b=a;a=(t1+t2)|0;}
+    H=[H[0]+a|0,H[1]+b|0,H[2]+c|0,H[3]+d|0,H[4]+e|0,H[5]+f|0,H[6]+g|0,H[7]+h|0];
+  }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,"0")).join("");
+}
+
+/* ---------- Methods ---------- */
+const METHODS={
+  keep:{label:"เก็บไว้"},
+  drop:{label:"ลบทิ้ง"},
+  hash:{label:"รหัสแทน (hash)",param:"prefix",def:"P-"},
+  seq:{label:"รหัสเรียงลำดับ",param:"prefix",def:"ID"},
+  mask:{label:"ปกปิดบางส่วน",param:"n",def:1},
+  trunc:{label:"ตัดเหลือ N หลัก",param:"n",def:6},
+  date_y:{label:"วันที่ → ปี ค.ศ."},
+  date_ym:{label:"วันที่ → ปี-เดือน"},
+  date_age:{label:"วันที่ → อายุ (ปี)",param:"ref"},
+  date_shift:{label:"เลื่อนวันที่ ±N วัน",param:"n",def:30},
+  band:{label:"ช่วงอายุ/ช่วงตัวเลข",param:"n",def:5},
+  const:{label:"แทนด้วยค่าคงที่",param:"text",def:"[ปกปิด]"},
+  scrub:{label:"ล้างข้อความอิสระ"}
+};
+
+/* HDC Data Exchange defaults (43 แฟ้ม + ฟิลด์ที่พบบ่อยใน report) */
+const HDC_RULES={
+  cid:["hash","C-",0], pid:["hash","P-",0,"hoscode"], hn:["hash","H-",0,"hoscode"], an:["hash","A-",0,"hoscode"], seq:["hash","S-",0,"hoscode"],
+  cid_provider:["hash","DR-",0], provider:["hash","DR-",0], registerno:["drop"], council:["keep"],
+  name:["drop"], lname:["drop"], fname:["drop"], mname:["drop"], prename:["drop"], fullname:["drop"],
+  telephone:["drop"], mobile:["drop"], tel:["drop"], phone:["drop"], email:["drop"], passport:["drop"],
+  father:["hash","P-",0,"hoscode"], mother:["hash","P-",0,"hoscode"], couple:["hash","P-",0,"hoscode"], fcid:["drop"], mcid:["drop"],
+  addr:["drop"], address:["drop"], houseno:["drop"], house_id:["drop"], hid:["drop"], road:["drop"], soimain:["drop"], soisub:["drop"], latitude:["drop"], longitude:["drop"],
+  birth:["date_y",null,1], dob:["date_y",null,1],
+  check_vhid:["trunc",6,1], vhid:["trunc",6,1], village:["drop"], postcode:["trunc",3,1],
+  sex:["keep",null,1], age_y:["keep",null,1], age:["keep",null,1], nation:["keep",null,1], race:["drop"], religion:["drop"],
+  date_serv:["keep"], discharge:["keep"], ddischarge:["keep"], d_update:["drop"],
+  remark:["scrub"], note:["scrub"], comment:["scrub"]
+};
+const STRICT_OVERRIDE={ check_vhid:["trunc",4,1], vhid:["trunc",4,1], date_serv:["date_ym"], birth:["date_y",null,1], hosname:["keep"], postcode:["drop"] };
+
+/* heuristic rules for unknown headers (Thai & English) */
+const HEUR=[
+  [/(^|_)(cid|idcard|id_card|citizen|pid13)|เลขบัตร|เลขประจำตัวประชาชน|บัตรประชาชน/i,["hash","C-",0]],
+  [/^(hn|an|pid|patient_?id|person_?id)$|รหัสผู้ป่วย/i,["hash","P-",0,"hoscode"]],
+  [/^(pname|prename|title)$|คำนำหน้า/i,["drop"]],
+  [/(first|last|full|sur)_?name|^f?name$|^lname$|ชื่อ|นามสกุล|สกุล/i,["drop"]],
+  [/tel|phone|mobile|โทร|มือถือ|email|e-mail|อีเมล|line_?id|ไลน์/i,["drop"]],
+  [/addr|address|ที่อยู่|บ้านเลขที่|houseno|ถนน|ซอย|lat|lng|long/i,["drop"]],
+  [/birth|dob|วันเกิด|เกิด/i,["date_y",null,1]],
+  [/^sex$|gender|เพศ/i,["keep",null,1]],
+  [/^age|อายุ/i,["keep",null,1]],
+  [/vhid|หมู่บ้าน|หมู่ที่/i,["trunc",6,1]],
+  [/remark|note|comment|หมายเหตุ|รายละเอียด/i,["scrub"]]
+];
+
+/* ---------- State ---------- */
+let WB=null, FILE=null, FILEBUF=null, HEAD=[], ROWS=[], CFG=[], OUT=null, KEYMAP={};
+const $=id=>document.getElementById(id);
+
+function newSalt(){const a=new Uint8Array(12);(window.crypto||window.msCrypto).getRandomValues(a);$("salt").value=Array.from(a,b=>b.toString(16).padStart(2,"0")).join("");}
+newSalt();
+
+/* ---------- File loading ---------- */
+const drop=$("drop");
+drop.onclick=()=>$("file").click();
+drop.ondragover=e=>{e.preventDefault();drop.classList.add("over")};
+drop.ondragleave=()=>drop.classList.remove("over");
+drop.ondrop=e=>{e.preventDefault();drop.classList.remove("over");if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);};
+$("file").onchange=e=>{if(e.target.files[0])loadFile(e.target.files[0]);};
+$("enc").onchange=()=>FILE&&parseBuf();
+$("sheet").onchange=()=>readSheet(true);
+$("hdrRow").onchange=()=>readSheet(true);
+
+function isCsv(n){return /\.(csv|txt)$/i.test(n)}
+function loadFile(f){
+  FILE=f;
+  const r=new FileReader();
+  r.onload=e=>{FILEBUF=new Uint8Array(e.target.result);parseBuf();};
+  r.readAsArrayBuffer(f);
+}
+function parseBuf(){
+  try{
+    if(isCsv(FILE.name)){
+      let enc=$("enc").value, txt;
+      if(enc==="auto"){ try{txt=new TextDecoder("utf-8",{fatal:true}).decode(FILEBUF);}catch(_){txt=new TextDecoder("windows-874").decode(FILEBUF);} }
+      else txt=new TextDecoder(enc).decode(FILEBUF);
+      txt=txt.replace(/^﻿/,"");
+      WB=XLSX.read(txt,{type:"string",raw:true});
+    } else WB=XLSX.read(FILEBUF,{type:"array",cellDates:true});
+  }catch(err){alertBox("อ่านไฟล์ไม่ได้: "+err.message);return;}
+  $("encWrap").classList.toggle("hidden",!isCsv(FILE.name));
+  $("fname").innerHTML="📄 <b>"+esc(FILE.name)+"</b>";
+  const s=$("sheet"); s.innerHTML="";
+  WB.SheetNames.forEach(n=>{const ws=WB.Sheets[n];const rg=ws["!ref"]?XLSX.utils.decode_range(ws["!ref"]):{e:{r:0,c:0}};
+    const o=document.createElement("option");o.value=n;o.textContent=n+" ("+rg.e.r+"×"+(rg.e.c+1)+")";s.appendChild(o);});
+  // choose sheet with most columns by default
+  let best=WB.SheetNames[0],bc=-1;
+  WB.SheetNames.forEach(n=>{const ws=WB.Sheets[n];if(!ws["!ref"])return;const c=XLSX.utils.decode_range(ws["!ref"]).e.c;if(c>bc){bc=c;best=n;}});
+  s.value=best;
+  $("fileinfo").classList.remove("hidden");
+  readSheet(false);
+}
+function readSheet(){
+  const ws=WB.Sheets[$("sheet").value];
+  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:""});
+  const h=Math.max(1,parseInt($("hdrRow").value)||1)-1;
+  const hdr=(aoa[h]||[]).map((x,i)=>String(x??"").trim()||("col"+(i+1)));
+  // dedupe headers
+  const seen={};HEAD=hdr.map(x=>{if(seen[x]){seen[x]++;return x+"_"+seen[x];}seen[x]=1;return x;});
+  ROWS=aoa.slice(h+1).filter(r=>r.some(v=>v!==""&&v!=null));
+  ROWS.forEach(r=>{while(r.length<HEAD.length)r.push("");});
+  $("rowinfo").textContent=ROWS.length.toLocaleString()+" แถว · "+HEAD.length+" ฟิลด์";
+  applyPreset($("preset").value);
+  $("cfgCard").classList.remove("hidden");$("runCard").classList.remove("hidden");
+  $("outArea").classList.add("hidden");$("risk").innerHTML="";OUT=null;
+}
+
+/* ---------- Detection ---------- */
+function sampleVals(ci,n=3){const out=[];for(const r of ROWS){const v=r[ci];if(v!==""&&v!=null&&v!=="<NA>"){out.push(fmtCell(v));if(out.length>=n)break;}}return out;}
+function valuePattern(ci){
+  let n=0,cid=0,tel=0,date=0;
+  for(const r of ROWS){const v=r[ci];if(v===""||v==null)continue;n++;const s=String(v).trim();
+    if(/^\d{13}$/.test(s)||/^\d-\d{4}-\d{5}-\d{2}-\d$/.test(s))cid++;
+    if(/^0[2-9]\d{7,8}$/.test(s.replace(/[-\s]/g,"")))tel++;
+    if(v instanceof Date||/^\d{4}-\d{2}-\d{2}/.test(s))date++;
+    if(n>=200)break;}
+  if(!n)return null;
+  if(cid/n>.8)return "cid"; if(tel/n>.8)return "tel"; if(date/n>.8)return "date"; return null;
+}
+function ruleFor(h,ci,preset){
+  const k=h.toLowerCase();
+  if(preset==="keep") return {m:"keep",qi:false,auto:false,s:""};
+  let r=null;
+  if(preset==="strict"&&STRICT_OVERRIDE[k]) r=STRICT_OVERRIDE[k];
+  if(!r&&HDC_RULES[k]) r=HDC_RULES[k];
+  let auto=false;
+  if(!r){ for(const [re,rr] of HEUR){ if(re.test(h)){r=rr;auto=true;break;} } }
+  if(!r){ const p=valuePattern(ci); if(p==="cid"){r=["hash","C-",0];auto=true;} else if(p==="tel"){r=["drop"];auto=true;} }
+  if(!r) r=["keep"];
+  const m=r[0]; let p=r[1]; if(p==null&&METHODS[m].param&&METHODS[m].param!=="ref")p=METHODS[m].def;
+  let s="";if(r[3]){const si=HEAD.findIndex(h=>h.toLowerCase()===r[3]);if(si>=0&&si!==ci)s=si;}
+  return {m, p, qi:!!r[2], auto, s};
+}
+function applyPreset(preset){
+  CFG=HEAD.map((h,i)=>{const r=ruleFor(h,i,preset);return {name:h,m:r.m,p:r.p,qi:r.qi,auto:r.auto,s:r.s};});
+  CFG.forEach(c=>{if(c.m==="date_age"&&!c.p)c.p=defaultRef();});
+  // person key
+  const pk=$("personKey");pk.innerHTML='<option value="">(ไม่ระบุ)</option>';
+  HEAD.forEach((h,i)=>{const o=document.createElement("option");o.value=i;o.textContent=h;pk.appendChild(o);});
+  const pref=["cid","pid","hn","idcard"];let sel="";
+  for(const p of pref){const i=HEAD.findIndex(h=>h.toLowerCase()===p);if(i>=0){sel=i;break;}}
+  if(sel===""){const i=CFG.findIndex(c=>c.m==="hash");if(i>=0)sel=i;}
+  pk.value=sel;
+  renderCfg();
+}
+function defaultRef(){const i=HEAD.findIndex(h=>/date_serv|วันที่รับบริการ/i.test(h));return i>=0?"col:"+i:"today";}
+
+/* ---------- Config table ---------- */
+function renderCfg(){
+  const tb=$("cfgTbl").tBodies[0];tb.innerHTML="";
+  CFG.forEach((c,i)=>{
+    const tr=document.createElement("tr");
+    tr.className=c.m==="drop"?"r-drop":(c.m!=="keep"?"r-chg":"");
+    const isId=["drop","hash","seq","mask","const"].includes(c.m)&&c.m!=="keep";
+    tr.innerHTML=`<td class="note">${i+1}</td><td class="fname">${esc(c.name)}${c.auto?'<span class="tag t-auto" title="ตรวจพบอัตโนมัติจากชื่อฟิลด์/รูปแบบค่า">auto</span>':""}${c.qi?'<span class="tag t-qi">QI</span>':""}${(c.m==="hash"||c.m==="seq")&&c.s!==""&&c.s!=null?'<span class="tag t-auto">+'+esc(HEAD[c.s])+'</span>':""}</td>
+      <td class="samp" title="${esc(sampleVals(i,6).join(' | '))}">${esc(sampleVals(i).join(" | "))}</td>
+      <td></td><td class="param"></td><td><input type="checkbox" ${c.qi?"checked":""}></td>`;
+    const sel=document.createElement("select");
+    for(const [k,v] of Object.entries(METHODS)){const o=document.createElement("option");o.value=k;o.textContent=v.label;sel.appendChild(o);}
+    sel.value=c.m;
+    sel.onchange=()=>{c.m=sel.value;const md=METHODS[c.m];c.p=md.param==="ref"?defaultRef():(md.def??null);c.auto=false;renderCfg();};
+    tr.cells[3].appendChild(sel);
+    tr.cells[4].appendChild(paramEditor(c));
+    tr.cells[5].firstChild.onchange=e=>{c.qi=e.target.checked;renderCfg();};
+    tb.appendChild(tr);
+  });
+}
+function paramEditor(c){
+  const md=METHODS[c.m],span=document.createElement("span");
+  if(!md.param)return span;
+  if(md.param==="ref"){
+    const s=document.createElement("select");
+    s.innerHTML='<option value="today">ณ วันนี้</option>'+HEAD.map((h,i)=>`<option value="col:${i}">ณ ${esc(h)}</option>`).join("");
+    s.value=c.p||"today";s.onchange=()=>c.p=s.value;span.appendChild(s);return span;
+  }
+  const lab={prefix:"คำนำหน้า",n:c.m==="band"?"กว้าง":c.m==="date_shift"?"± วัน":"N =",text:"ข้อความ"}[md.param];
+  const inp=document.createElement("input");
+  inp.type=md.param==="n"?"number":"text";inp.value=c.p??"";
+  if(md.param==="prefix")inp.style.width="70px";
+  inp.oninput=()=>c.p=md.param==="n"?(parseInt(inp.value)||0):inp.value;
+  span.innerHTML=`<label class="small">${lab} </label>`;span.appendChild(inp);
+  if(c.m==="hash"||c.m==="seq"){
+    const s=document.createElement("select");s.title="รวมค่าคอลัมน์นี้ก่อนแปลงรหัส (เช่น pid ไม่ซ้ำเฉพาะภายใน hoscode)";
+    s.innerHTML='<option value="">ไม่รวมคอลัมน์อื่น</option>'+HEAD.map((h,i)=>`<option value="${i}">+ ${esc(h)}</option>`).join("");
+    s.value=c.s===""||c.s==null?"":String(c.s);s.style.marginLeft="6px";
+    s.onchange=()=>{c.s=s.value===""?"":+s.value;renderCfg();};span.appendChild(s);
+  }
+  return span;
+}
+
+/* ---------- Helpers ---------- */
+function esc(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function isBlank(v){return v===""||v==null||v==="<NA>"||v==="NULL"||v==="null"}
+function pad(n){return String(n).padStart(2,"0")}
+function fmtCell(v){if(v instanceof Date)return v.getFullYear()+"-"+pad(v.getMonth()+1)+"-"+pad(v.getDate());return String(v);}
+function toDate(v){
+  if(v instanceof Date&&!isNaN(v))return new Date(v.getFullYear(),v.getMonth(),v.getDate());
+  if(typeof v==="number"&&v>20000&&v<80000){const d=XLSX.SSF.parse_date_code(v);return new Date(d.y,d.m-1,d.d);}
+  let s=String(v).trim(),y,m,d,x;
+  if((x=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/)))[y,m,d]=[+x[1],+x[2],+x[3]];
+  else if((x=s.match(/^(\d{4})(\d{2})(\d{2})(\d{6})?$/)))[y,m,d]=[+x[1],+x[2],+x[3]];
+  else if((x=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})/)))[y,m,d]=[+x[3],+x[2],+x[1]];
+  else return null;
+  if(y>2400)y-=543; // พ.ศ. → ค.ศ.
+  const dt=new Date(y,m-1,d);return isNaN(dt)?null:dt;
+}
+function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function ageAt(b,r){let a=r.getFullYear()-b.getFullYear();if(r.getMonth()<b.getMonth()||(r.getMonth()===b.getMonth()&&r.getDate()<b.getDate()))a--;return a;}
+function scopeVal(c,row){return (c.s===""||c.s==null)?null:normId(row[c.s]??"");}
+function normId(v){let s=String(v).trim();if(/^\d+\.0+$/.test(s))s=s.replace(/\.0+$/,"");return s;}
+
+/* ---------- Transform ---------- */
+function run(){
+  const salt=$("salt").value;
+  if(CFG.some(c=>c.m==="hash")&&salt.length<8){alertBox("กรุณาตั้ง salt อย่างน้อย 8 ตัวอักษร");return;}
+  const t0=performance.now();
+  const keep=CFG.map((c,i)=>i).filter(i=>CFG[i].m!=="drop");
+  const outHead=keep.map(i=>CFG[i].name);
+  const pk=$("personKey").value===""?-1:+$("personKey").value;
+  const seqMaps={};KEYMAP={};
+  const shiftCache={};
+  const today=new Date();today.setHours(0,0,0,0);
+  const out=new Array(ROWS.length);
+  let errs={};
+  for(let r=0;r<ROWS.length;r++){
+    const row=ROWS[r],o=new Array(keep.length);
+    for(let j=0;j<keep.length;j++){
+      const ci=keep[j],c=CFG[ci],v=row[ci];
+      let res=v;
+      if(isBlank(v)){o[j]=v instanceof Date?"":(v??"");continue;}
+      switch(c.m){
+        case "keep": res=v instanceof Date?ymd(v):v;break;
+        case "hash":{const o0=normId(v),sv=scopeVal(c,row),s=sv===null?o0:sv+"#"+o0;
+          const code=(c.p||"")+sha256(salt+"|"+c.name.toLowerCase()+"|"+s).slice(0,12);res=code;
+          (KEYMAP[c.name]=KEYMAP[c.name]||new Map()).set(s,[sv,o0,code]);break;}
+        case "seq":{const o0=normId(v),sv=scopeVal(c,row),s=sv===null?o0:sv+"#"+o0;const mp=seqMaps[ci]=seqMaps[ci]||new Map();
+          if(!mp.has(s))mp.set(s,(c.p||"")+String(mp.size+1).padStart(5,"0"));res=mp.get(s);
+          (KEYMAP[c.name]=KEYMAP[c.name]||new Map()).set(s,[sv,o0,res]);break;}
+        case "mask":{const s=String(v),n=Math.max(0,c.p|0);res=s.slice(0,n)+"*".repeat(Math.max(3,s.length-n));break;}
+        case "trunc":{const s=normId(v);res=s.slice(0,Math.max(0,c.p|0));break;}
+        case "date_y":{const d=toDate(v);if(d)res=String(d.getFullYear());else{res="";errs[c.name]=(errs[c.name]||0)+1;}break;}
+        case "date_ym":{const d=toDate(v);if(d)res=d.getFullYear()+"-"+pad(d.getMonth()+1);else{res="";errs[c.name]=(errs[c.name]||0)+1;}break;}
+        case "date_age":{const d=toDate(v);let ref=today;
+          if(c.p&&c.p.startsWith("col:")){const rd=toDate(row[+c.p.slice(4)]);if(rd)ref=rd;}
+          if(d)res=ageAt(d,ref);else{res="";errs[c.name]=(errs[c.name]||0)+1;}break;}
+        case "date_shift":{const d=toDate(v);if(!d){res="";errs[c.name]=(errs[c.name]||0)+1;break;}
+          let key="row"+r;if(pk>=0){const sv=scopeVal(CFG[pk],row);key=(sv===null?"":sv+"#")+normId(row[pk]);}let off=shiftCache[key];
+          if(off===undefined){const N=Math.max(1,c.p|0);off=(parseInt(sha256("shift|"+salt+"|"+key).slice(0,8),16)%(2*N+1))-N;if(off===0)off=1;shiftCache[key]=off;}
+          const nd=new Date(d);nd.setDate(nd.getDate()+off);res=ymd(nd);break;}
+        case "band":{const x=parseFloat(v),w=Math.max(1,c.p|0);if(isNaN(x)){res="";break;}const lo=Math.floor(x/w)*w;res=w===1?String(lo):lo+"-"+(lo+w-1);break;}
+        case "const": res=c.p??"";break;
+        case "scrub": res=String(v).replace(/\b\d[-\s]?\d{4}[-\s]?\d{5}[-\s]?\d{2}[-\s]?\d\b/g,"[เลขบัตร]")
+            .replace(/\b0[2-9]\d?[-\s]?\d{3}[-\s]?\d{4}\b/g,"[เบอร์โทร]")
+            .replace(/[\w.+-]+@[\w-]+\.[\w.]+/g,"[อีเมล]");break;
+      }
+      o[j]=res;
+    }
+    out[r]=o;
+  }
+  OUT={head:outHead,rows:out,keep};
+  const ms=Math.round(performance.now()-t0);
+  $("runinfo").textContent=`เสร็จใน ${ms} ms · ผลลัพธ์ ${out.length.toLocaleString()} แถว × ${outHead.length} ฟิลด์ (ลบ ${HEAD.length-outHead.length} ฟิลด์)`;
+  riskReport(errs);
+  showPreview(true);
+  $("outArea").classList.remove("hidden");
+}
+
+function riskReport(errs){
+  let h="";
+  // remaining direct identifiers
+  const leaks=[];
+  CFG.forEach((c,i)=>{if(c.m!=="keep")return;const r=ruleFor(c.name,i,"hdc");if(["drop","hash"].includes(r.m))leaks.push(c.name);});
+  if(leaks.length)h+=`<div class="alert a-bad">⛔ ยังเก็บฟิลด์ที่น่าจะเป็นข้อมูลระบุตัวตนโดยตรง: <b>${leaks.map(esc).join(", ")}</b> — ตรวจสอบอีกครั้ง</div>`;
+  // name-like masked values from HDC (e.g. 'เมฆสู*****')
+  const errL=Object.entries(errs);
+  if(errL.length)h+=`<div class="alert a-warn">แปลงวันที่ไม่ได้บางค่า (ปล่อยว่าง): ${errL.map(([k,n])=>esc(k)+" "+n+" ค่า").join(", ")}</div>`;
+  // k-anonymity
+  const qi=OUT.keep.map((ci,j)=>[ci,j]).filter(([ci])=>CFG[ci].qi);
+  if(qi.length){
+    const g=new Map();
+    for(const row of OUT.rows){const k=qi.map(([,j])=>row[j]).join("\u0001");g.set(k,(g.get(k)||0)+1);}
+    let mn=Infinity,lt5=0,uniq=0;for(const v of g.values()){if(v<mn)mn=v;if(v<5)lt5+=v;if(v===1)uniq++;}
+    const pct=(lt5/OUT.rows.length*100).toFixed(1);
+    const cls=mn>=5?"a-ok":(pct>20?"a-bad":"a-warn");
+    h+=`<div class="alert ${cls}"><b>k-anonymity</b> จาก QI: ${qi.map(([ci])=>esc(CFG[ci].name)).join(" + ")}
+      <div class="stats"><div class="stat"><b>${mn}</b><span>k ต่ำสุด (เป้าหมาย ≥ 5)</span></div>
+      <div class="stat"><b>${g.size.toLocaleString()}</b><span>กลุ่มที่ไม่ซ้ำกัน</span></div>
+      <div class="stat"><b>${uniq.toLocaleString()}</b><span>ระเบียนที่ไม่ซ้ำใคร (k=1)</span></div>
+      <div class="stat"><b>${pct}%</b><span>ระเบียนในกลุ่ม k&lt;5</span></div></div>
+      ${mn<5?'<div style="margin-top:6px">แนะนำ: ลดความละเอียด QI เช่น ตัดรหัสหมู่บ้านเหลือ 4 หลัก (อำเภอ), เปลี่ยนวันเกิดเป็นปี, หรือจัดอายุเป็นช่วง</div>':""}</div>`;
+  } else h+=`<div class="alert a-warn">ยังไม่ได้เลือก QI (quasi-identifier) จึงไม่ได้ตรวจ k-anonymity</div>`;
+  $("risk").innerHTML=h;
+}
+
+function showPreview(after){
+  $("tabAfter").classList.toggle("on",after);$("tabBefore").classList.toggle("on",!after);
+  const head=after?OUT.head:HEAD,rows=(after?OUT.rows:ROWS).slice(0,30);
+  $("prevTbl").innerHTML="<thead><tr>"+head.map(h=>"<th>"+esc(h)+"</th>").join("")+"</tr></thead><tbody>"+
+    rows.map(r=>"<tr>"+r.map(v=>"<td>"+esc(fmtCell(v??""))+"</td>").join("")+"</tr>").join("")+"</tbody>";
+}
+$("tabAfter").onclick=()=>OUT&&showPreview(true);
+$("tabBefore").onclick=()=>OUT&&showPreview(false);
+
+/* ---------- Export ---------- */
+function baseName(){return FILE.name.replace(/\.[^.]+$/,"")+"_anon";}
+function saveBlob(blob,name){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
+function logRows(){
+  const rows=[["ฟิลด์","วิธีจัดการ","พารามิเตอร์","QI","รวมกับคอลัมน์"]];
+  CFG.forEach(c=>{let p=c.p??"";if(typeof p==="string"&&p.startsWith("col:"))p="ณ "+HEAD[+p.slice(4)];rows.push([c.name,METHODS[c.m].label,String(p),c.qi?"Y":"",(c.m==="hash"||c.m==="seq")&&c.s!==""&&c.s!=null?HEAD[c.s]:""]);});
+  rows.push([]);rows.push(["ไฟล์ต้นทาง",FILE.name]);rows.push(["วันที่ประมวลผล",new Date().toLocaleString("th-TH")]);
+  rows.push(["หมายเหตุ","รหัสแทนสร้างด้วย SHA-256 + secret salt (ไม่แนบ salt ในไฟล์นี้)"]);
+  return rows;
+}
+$("btnXlsx").onclick=()=>{
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([OUT.head,...OUT.rows]),"Data");
+  if($("incLog").checked)XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(logRows()),"anon_log");
+  const buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});
+  saveBlob(new Blob([buf],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}),baseName()+".xlsx");
+};
+function toCsv(aoa){return "﻿"+aoa.map(r=>r.map(v=>{let s=fmtCell(v??"");return /[",\n\r]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}).join(",")).join("\r\n");}
+$("btnCsv").onclick=()=>saveBlob(new Blob([toCsv([OUT.head,...OUT.rows])],{type:"text/csv;charset=utf-8"}),baseName()+".csv");
+$("btnKey").onclick=()=>{
+  const names=Object.keys(KEYMAP);if(!names.length){alertBox("ไม่มีฟิลด์ที่ใช้รหัสแทน");return;}
+  const wb=XLSX.utils.book_new();
+  names.forEach(n=>{const c=CFG.find(x=>x.name===n),sc=(c.s===""||c.s==null)?null:HEAD[c.s];
+    const aoa=[sc?[sc,"original_"+n,"code_"+n]:["original_"+n,"code_"+n]];
+    KEYMAP[n].forEach(([sv,o0,code])=>aoa.push(sc?[sv,o0,code]:[o0,code]));
+    XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(aoa),n.slice(0,31));});
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([["salt",$("salt").value],["คำเตือน","ไฟล์นี้ใช้ย้อนกลับหาตัวบุคคลได้ เก็บเป็นความลับ"]]),"salt");
+  saveBlob(new Blob([XLSX.write(wb,{bookType:"xlsx",type:"array"})]),baseName()+"_KEY_SECRET.xlsx");
+};
+
+/* ---------- Config save/load ---------- */
+$("btnSaveCfg").onclick=()=>{
+  const cfg={version:1,personKey:$("personKey").value===""?null:HEAD[+$("personKey").value],
+    fields:CFG.map(c=>({name:c.name,method:c.m,param:(typeof c.p==="string"&&c.p.startsWith("col:"))?"col:"+HEAD[+c.p.slice(4)]:c.p,qi:c.qi,scope:(c.s===""||c.s==null)?null:HEAD[c.s]}))};
+  saveBlob(new Blob([JSON.stringify(cfg,null,2)],{type:"application/json"}),"anon_config.json");
+};
+$("btnLoadCfg").onclick=()=>$("cfgFile").click();
+$("cfgFile").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();
+  r.onload=()=>{try{const cfg=JSON.parse(r.result);let hit=0;
+    cfg.fields.forEach(fd=>{const c=CFG.find(x=>x.name.toLowerCase()===String(fd.name).toLowerCase());if(!c||!METHODS[fd.method])return;
+      c.m=fd.method;c.qi=!!fd.qi;c.auto=false;let p=fd.param;
+      if(typeof p==="string"&&p.startsWith("col:")){const i=HEAD.indexOf(p.slice(4));p=i>=0?"col:"+i:"today";}
+      c.p=p;c.s="";if(fd.scope){const si=HEAD.findIndex(h=>h.toLowerCase()===String(fd.scope).toLowerCase());if(si>=0)c.s=si;}hit++;});
+    if(cfg.personKey){const i=HEAD.indexOf(cfg.personKey);if(i>=0)$("personKey").value=i;}
+    renderCfg();alertBox("โหลดการตั้งค่าแล้ว ตรงกัน "+hit+"/"+CFG.length+" ฟิลด์",true);
+  }catch(err){alertBox("ไฟล์ตั้งค่าไม่ถูกต้อง");}};r.readAsText(f);e.target.value="";};
+
+$("btnApplyPreset").onclick=()=>applyPreset($("preset").value);
+$("btnNewSalt").onclick=newSalt;
+$("btnRun").onclick=run;
+
+function alertBox(msg,ok){const d=document.createElement("div");d.className="alert "+(ok?"a-ok":"a-bad");d.textContent=msg;
+  d.style.cssText="position:fixed;top:16px;right:16px;z-index:9;max-width:420px;box-shadow:0 4px 16px rgba(0,0,0,.15)";
+  document.body.appendChild(d);setTimeout(()=>d.remove(),4000);}
+</script>
+</body>
+</html>

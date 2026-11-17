@@ -1,0 +1,12 @@
+# --- never commit real data, keys or salts ---
+*.xlsx
+*.xls
+*.csv
+*.txt
+*_KEY_SECRET*
+anon_config*.json
+!package.json
+
+node_modules/
+.DS_Store
+Thumbs.db
