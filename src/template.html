@@ -11,7 +11,13 @@ body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,syst
 header{background:var(--pri);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
 header .hd{flex:1;min-width:280px}
 #dlApp{background:#fff;color:var(--pri);border:none;font-weight:600;padding:9px 16px;border-radius:8px;text-decoration:none;font-size:14px;white-space:nowrap}
-#dlApp:hover{filter:brightness(.95)}
+#dlApp:hover,#manLink:hover{filter:brightness(.95)}
+.hbtns{display:flex;gap:8px;flex-wrap:wrap}
+#manLink{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.7);padding:8px 14px;border-radius:8px;text-decoration:none;font-size:14px;white-space:nowrap}
+.mode{display:flex;gap:12px;align-items:flex-start;background:#eaf4fb;border:1px solid #bcd9ef;color:#17415f;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:14px}
+.mode.off{background:var(--okbg);border-color:#bfe3cc;color:#0f5130}
+.mode b{display:block;margin-bottom:2px}
+.mode .ic{font-size:22px;line-height:1}
 header h1{margin:0;font-size:21px;font-weight:600}
 header p{margin:4px 0 0;opacity:.85;font-size:13.5px}
 main{max-width:1280px;margin:0 auto;padding:20px}
@@ -66,9 +72,23 @@ td.param input,td.param select{max-width:150px}
   <h1>🔒 Data Anonymizer for AI</h1>
   <p>แปลงข้อมูลรายบุคคลให้เป็นข้อมูลนิรนาม (anonymous / pseudonymous) ก่อนส่งให้ AI วิเคราะห์ — ค่าเริ่มต้นตามไฟล์ Data Exchange จาก HDC · ประมวลผลในเบราว์เซอร์ทั้งหมด ไม่มีการส่งข้อมูลออกนอกเครื่อง</p>
   </div>
-  <a id="dlApp" class="hidden" download="anonymizer.html" title="บันทึกแอปเป็นไฟล์เดียว ดับเบิลคลิกเปิดใช้งานได้โดยไม่ต้องใช้อินเทอร์เน็ต">⬇ ดาวน์โหลดแอปไว้ใช้ออฟไลน์</a>
+  <div class="hbtns">
+    <a id="manLink" href="https://github.com/nchotenin-tech/ohsp-anonymizer/blob/main/docs/MANUAL.md" target="_blank" rel="noopener">📖 คู่มือการใช้งาน</a>
+    <a id="dlApp" class="hidden" download="anonymizer.html" title="บันทึกแอปเป็นไฟล์เดียว ดับเบิลคลิกเปิดใช้งานได้โดยไม่ต้องใช้อินเทอร์เน็ต">⬇ ดาวน์โหลดแอปไว้ใช้ออฟไลน์</a>
+  </div>
 </header>
 <main>
+<div id="modeWeb" class="mode hidden"><span class="ic">ℹ️</span><div>
+  <b>เปิดผ่านลิงก์ก็ปลอดภัย ข้อมูลไม่ถูกส่งไปที่ server</b>
+  ลิงก์นี้แค่ส่งตัวแอปมาให้เบราว์เซอร์ จากนั้นแอปทำงานในเครื่องของคุณทั้งหมด ไฟล์ที่คุณเลือกจะถูกอ่านและแปลงในเครื่องนี้เท่านั้น ไม่มีการอัปโหลด
+  (เหมือนเปิดไฟล์ PDF จากเว็บ: ตัวไฟล์อยู่บนเว็บ แต่อ่านด้วยโปรแกรมในเครื่องเรา)<br>
+  ทดสอบเองได้: หลังหน้านี้โหลดเสร็จ ให้ปิด Wi-Fi หรือถอดสาย LAN แล้วใช้งานต่อ แอปยังทำงานได้ตามปกติ ·
+  ปุ่ม <b style="display:inline">⬇ ดาวน์โหลดแอปไว้ใช้ออฟไลน์</b> มีไว้สำหรับเครื่องที่ไม่มีอินเทอร์เน็ต หรือหน่วยงานที่ต้องการเก็บตัวแอปไว้ในเครื่อง ผลลัพธ์เหมือนกันทุกอย่าง
+</div></div>
+<div id="modeFile" class="mode off hidden"><span class="ic">💻</span><div>
+  <b>กำลังใช้แอปแบบออฟไลน์จากไฟล์ในเครื่อง</b>
+  แอปและข้อมูลทั้งหมดอยู่ในเครื่องนี้ ไม่ต้องใช้อินเทอร์เน็ต (ต้องใช้อินเทอร์เน็ตเฉพาะตอนเปิดอ่านคู่มือ)
+</div></div>
 
 <section class="card">
   <h2><span class="step">1</span> เลือกไฟล์ข้อมูล (Excel .xlsx/.xls หรือ CSV)</h2>
@@ -239,7 +259,8 @@ const $=id=>document.getElementById(id);
 function newSalt(){const a=new Uint8Array(12);(window.crypto||window.msCrypto).getRandomValues(a);$("salt").value=Array.from(a,b=>b.toString(16).padStart(2,"0")).join("");}
 newSalt();
 /* offline download button: shown only when the app is opened from a web link */
-if(location.protocol==="http:"||location.protocol==="https:"){const a=$("dlApp");a.href=location.href.split("#")[0].split("?")[0];a.classList.remove("hidden");}
+if(location.protocol==="http:"||location.protocol==="https:"){const a=$("dlApp");a.href=location.href.split("#")[0].split("?")[0];a.classList.remove("hidden");$("modeWeb").classList.remove("hidden");}
+else $("modeFile").classList.remove("hidden");
 
 /* ---------- File loading ---------- */
 const drop=$("drop");
