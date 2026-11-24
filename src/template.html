@@ -218,7 +218,7 @@ const HEUR=[
   [/^(pname|prename|title)$|คำนำหน้า/i,["drop"]],
   [/(first|last|full|sur)_?name|^f?name$|^lname$|ชื่อ|นามสกุล|สกุล/i,["drop"]],
   [/tel|phone|mobile|โทร|มือถือ|email|e-mail|อีเมล|line_?id|ไลน์/i,["drop"]],
-  [/addr|address|ที่อยู่|บ้านเลขที่|houseno|ถนน|ซอย|lat|lng|long/i,["drop"]],
+  [/addr|address|ที่อยู่|บ้านเลขที่|เลขที่บ้าน|^เลขที่$|house_?no|ถนน|ซอย|lat|lng|long/i,["drop"]],
   [/birth|dob|วันเกิด|เกิด/i,["date_y",null,1]],
   [/^sex$|gender|เพศ/i,["keep",null,1]],
   [/^age|อายุ/i,["keep",null,1]],
