@@ -8,7 +8,10 @@
 :root{--bg:#f6f7f9;--card:#fff;--ink:#1d2433;--mute:#5d6678;--line:#e1e5ec;--pri:#0f6e6e;--pri2:#e5f3f2;--warn:#b45309;--warnbg:#fff7e6;--bad:#b42318;--badbg:#fdecea;--ok:#147a3d;--okbg:#e8f6ee}
 *{box-sizing:border-box}
 body{margin:0;font-family:"Sarabun","Noto Sans Thai","Leelawadee UI",Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.5}
-header{background:var(--pri);color:#fff;padding:18px 28px}
+header{background:var(--pri);color:#fff;padding:18px 28px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+header .hd{flex:1;min-width:280px}
+#dlApp{background:#fff;color:var(--pri);border:none;font-weight:600;padding:9px 16px;border-radius:8px;text-decoration:none;font-size:14px;white-space:nowrap}
+#dlApp:hover{filter:brightness(.95)}
 header h1{margin:0;font-size:21px;font-weight:600}
 header p{margin:4px 0 0;opacity:.85;font-size:13.5px}
 main{max-width:1280px;margin:0 auto;padding:20px}
@@ -59,8 +62,11 @@ td.param input,td.param select{max-width:150px}
 </head>
 <body>
 <header>
+  <div class="hd">
   <h1>🔒 Data Anonymizer for AI</h1>
   <p>แปลงข้อมูลรายบุคคลให้เป็นข้อมูลนิรนาม (anonymous / pseudonymous) ก่อนส่งให้ AI วิเคราะห์ — ค่าเริ่มต้นตามไฟล์ Data Exchange จาก HDC · ประมวลผลในเบราว์เซอร์ทั้งหมด ไม่มีการส่งข้อมูลออกนอกเครื่อง</p>
+  </div>
+  <a id="dlApp" class="hidden" download="anonymizer.html" title="บันทึกแอปเป็นไฟล์เดียว ดับเบิลคลิกเปิดใช้งานได้โดยไม่ต้องใช้อินเทอร์เน็ต">⬇ ดาวน์โหลดแอปไว้ใช้ออฟไลน์</a>
 </header>
 <main>
 
@@ -254,6 +260,8 @@ const $=id=>document.getElementById(id);
 
 function newSalt(){const a=new Uint8Array(12);(window.crypto||window.msCrypto).getRandomValues(a);$("salt").value=Array.from(a,b=>b.toString(16).padStart(2,"0")).join("");}
 newSalt();
+/* offline download button: shown only when the app is opened from a web link */
+if(location.protocol==="http:"||location.protocol==="https:"){const a=$("dlApp");a.href=location.href.split("#")[0].split("?")[0];a.classList.remove("hidden");}
 
 /* ---------- File loading ---------- */
 const drop=$("drop");
