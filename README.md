@@ -7,6 +7,9 @@
 
 ## วิธีใช้งาน
 
+📖 **[คู่มือการใช้งานแบบละเอียด (สำหรับผู้ใช้ทั่วไป)](docs/MANUAL.md)**
+
+
 1. เปิดใช้งานออนไลน์ที่ **https://nchotenin-tech.github.io/ohsp-anonymizer/**
    หรือดาวน์โหลด [`dist/anonymizer.html`](dist/anonymizer.html) แล้วดับเบิลคลิกเปิดด้วย Chrome / Edge (ใช้ออฟไลน์ได้)
 2. ลากไฟล์ `.xlsx` / `.xls` / `.csv` มาวาง
