@@ -7,7 +7,8 @@
 
 ## วิธีใช้งาน
 
-1. ดาวน์โหลด [`dist/anonymizer.html`](dist/anonymizer.html) แล้วดับเบิลคลิกเปิดด้วย Chrome หรือ Edge
+1. เปิดใช้งานออนไลน์ที่ **https://nchotenin-tech.github.io/ohsp-anonymizer/**
+   หรือดาวน์โหลด [`dist/anonymizer.html`](dist/anonymizer.html) แล้วดับเบิลคลิกเปิดด้วย Chrome / Edge (ใช้ออฟไลน์ได้)
 2. ลากไฟล์ `.xlsx` / `.xls` / `.csv` มาวาง
 3. ตรวจและปรับวิธีจัดการรายฟิลด์ แล้วกด **ประมวลผล**
 4. ตรวจผล k-anonymity แล้วดาวน์โหลดไฟล์ผลลัพธ์ (.xlsx / .csv)
@@ -38,6 +39,8 @@
 npm install
 npm run build   # → dist/anonymizer.html
 ```
+
+ทุกครั้งที่ push ขึ้น `main` GitHub Actions จะ build และ deploy ไปที่ GitHub Pages อัตโนมัติ (`.github/workflows/pages.yml`)
 
 ## Third-party
 
